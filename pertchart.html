@@ -1,0 +1,169 @@
+<html>
+
+<title> Pert Chart </title>
+
+<head>
+  <script type="text/javascript" src="static/jquery/jquery.min.js"></script>
+  <script type="text/javascript" src="static/jsonrpcjs-0.1.7/jsonrpcjs-0.1.7.min.js"></script>  
+</head>
+<form id="canvas_form">
+  <table width="100%">
+  <tr>
+    <td>&nbsp;</td>
+    <td align=right>
+      <select id="menu" size="1">
+        <option value="nothing" selected="selected"> Choose ... </option>
+        <option value="day"> Days </option>
+        <option value="month"> Months </option>
+        <option value="year"> Years</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+   <td align="left" ><button type="button" name="left"> left </button></td>
+   <td align="right"><button type="button" name="right"> right </button></td>
+  </tr>
+  </table>
+</form>
+<canvas id="canvas"></canvas>
+
+<script type="text/javascript">
+  var canvas = document.getElementById("canvas");
+  var context = canvas.getContext("2d");
+  canvas.width = "1350";
+  canvas.height = "550";
+  /*context.fillStyle = "FFEFBD";
+  context.fillRect(0,0,1350,550);*/
+  var tasks = 
+  [
+    {"name": "task 1", "start": 4, "end": 7, "type": "month"},
+    {"name": "task 2", "start": 5, "end": 6, "type": "month"},
+    {"name": "task 3", "start": 8, "end": 11,"type": "month"},
+    {"name": "task 4", "start": 6, "end": 3, "type": "month"},
+    {"name": "task 5", "start": 4, "end": 10,"type": "month"},
+    {"name": "task 6", "start": 2, "end": 9, "type": "month"},
+    {"name": "task 7", "start": 1, "end": 5, "type": "month"},
+    {"name": "task 8", "start": 5, "end": 5, "type": "month"},
+    {"name": "task 9", "start": 5, "end": 6, "type": "month"},
+    {"name": "task 10", "start": 7, "end": 12, "type": "month"},
+    {"name": "task 11", "start": 8, "end": 9, "type": "month"},
+    {"name": "task 12", "start": 11, "end": 12, "type": "month"},
+    {"name": "task 13", "start": 1, "end": 12, "type": "month"}
+  ]; 
+   
+       
+  tasks.sort(function(a, b) 
+  {
+    return a.start < b.start ? -1 : (a.start > b.start ? 1: 0);
+  });
+  
+  var months = new Array(13);
+  
+  var bandwith = canvas.width/13;
+  var bandheight = canvas.height/(tasks.length+1);
+  var rwidth = bandheight/2;     
+  drawTasks(context, 100, 20, tasks, bandwith, 0);
+  drawMonths(context, 100, 10, months, bandwith, 0);
+   
+  var intialoffset = 100 + bandwith;         
+  function drawTasks(context, startx, starty, tasks, bandwith, index)
+  {
+   var len = tasks.length;
+   for(var i=0; i<len; i++)
+   {
+     context.fillStyle = "black";
+     context.textAlign = "top";
+     
+     drawLine(context, startx/10, starty+((i+1)*bandheight), canvas.width, starty+((i+1)*bandheight));
+     context.fillText(tasks[i].name, startx/10, starty + ((i+1)*bandheight) + 10);
+     
+     if(tasks[i].start < tasks[i].end && index < tasks[i].end)
+     {
+      var startrectx = startx + (tasks[i].start-index)*bandwith;
+      var heigth = startx + (tasks[i].end-index)*bandwith;
+      if(startrectx <= intialoffset)
+       drawRectangular(context, intialoffset, starty+((i+1)*bandheight), heigth-intialoffset, rwidth, true);
+      else
+       drawRectangular(context, startrectx, starty+((i+1)*bandheight), heigth-startrectx, rwidth, true);
+     }
+     
+   }
+  }
+
+  function drawMonths(context, startx, starty, months, bandwith, index)
+  {
+  
+    var s = new Array(12);
+    
+    s[0] = "January";
+    s[1] = "February";
+    s[2] = "March";
+    s[3] = "April";
+    s[4] = "May";
+    s[5] = "June";
+    s[6] = "July";
+    s[7] = "August";
+    s[8] = "September";
+    s[9] = "October";
+    s[10] = "November";
+    s[11] = "December";
+    
+    for(var i=1; i<=12; i++)
+    {
+      months[i] = i;
+      context.fillStyle = "black";
+      context.textAlign = "left";
+      if(months[i]+index>=1 && months[i]+index<=12)
+      {
+        context.fillText(s[i-1+index], startx+(i*bandwith), starty);
+        drawLine(context, startx+(i*bandwith), starty, startx+(i*bandwith), canvas.height);
+      }
+      else
+      {
+        drawLine(context, startx+(i*bandwith), starty, startx+(i*bandwith), canvas.height);
+      }
+    }
+  }
+  var index = 0;
+  $(function()
+  {
+    $('#canvas_form button[name="left"]').click(function()
+    {      
+      canvas.width = canvas.width;
+      index -= 1;
+      drawTasks(context, 100, 20, tasks, bandwith, index);
+      drawMonths(context, 100, 10, months, bandwith, index);     
+    });
+    $('#canvas_form button[name="right"]').click(function()
+    {
+      canvas.width = canvas.width;
+      index += 1;
+      drawTasks(context, 100, 20, tasks, bandwith, index);
+      drawMonths(context, 100, 10, months, bandwith, index);
+    });
+  });  
+  function drawLine(context, startx, starty, endx, endy)
+  {
+    context.beginPath();
+    context.lineWidth = "0.3";    
+    context.moveTo(startx, starty);
+    context.lineTo(endx, endy);
+    context.closePath();
+    context.stroke();
+  }
+
+  function drawRectangular(context, startx, starty, width, height, fill)
+  {
+    context.beginPath();
+    context.fillStyle = "F7E92A";// '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+    context.fillRect(startx, starty, width, height);
+    context.closePath();
+    context.stroke();
+    if(fill) context.fill();
+  }
+</script>
+
+<body>
+
+</bdoy>
+</html>
